@@ -1,0 +1,15 @@
+client:
+  serviceName: client
+  serviceId: client-1
+  ipAddress: 172.16.0.7
+  port: 28300
+  heartbeatInterval: 60
+  loggingInterval: 1
+
+registry:
+  addresses:
+    - http://172.16.0.7:28180
+    - http://172.16.0.7:28181
+
+logging:
+  baseURL: http://172.16.0.7:28400

@@ -1,0 +1,26 @@
+kingstar:
+  id: "40008"
+  token: "Xzh000LyPq7Wm1Ae"
+
+server:
+  ip: "172.16.0.7"
+  baseUrl: "http://172.16.0.7:40008"
+
+gitlab:
+  url: "http://120.92.88.48/whkj_xiezihang/one-pass.git"
+
+# API接口配置
+api:
+  payUrl: "http://172.16.0.93/thirdpart/onePass/pay"
+  batchPayBeginUrl: "http://172.16.0.93/thirdpart/onePass/batchPayBegin"
+  batchPayFinishUrl: "http://172.16.0.93/thirdpart/onePass/batchPayFinish"
+
+# 数据库配置 - 使用Docker容器名称
+mysql:
+  dsn: "root:root@tcp(onepass-mysql:3306)/onepass?charset=utf8mb4&parseTime=True&loc=Local"
+
+# Redis配置 - 使用Docker容器名称
+redis:
+  addr: "redis:6379"
+  password: ""
+  db: 0

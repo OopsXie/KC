@@ -1,0 +1,25 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: microservice-ingress
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  rules:
+  - host: microservice.local  # 可以配置为你的域名
+    http:
+      paths:
+      - path: /consumer
+        pathType: Prefix
+        backend:
+          service:
+            name: consumer-service
+            port:
+              number: 80
+      - path: /provider
+        pathType: Prefix
+        backend:
+          service:
+            name: provider-service
+            port:
+              number: 80

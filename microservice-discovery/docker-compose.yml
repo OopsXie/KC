@@ -1,0 +1,29 @@
+version: '3.8'
+
+services:
+  # 服务提供者
+  provider:
+    build: ./provider  # 基于provider目录的Dockerfile构建
+    ports:
+      - "8080:8080"    # 本地端口:容器端口
+    restart: always    # 容器退出时自动重启
+    networks:
+      - microservice-network  # 加入自定义网络
+
+  # 服务消费者
+  consumer:
+    build: ./consumer  # 基于consumer目录的Dockerfile构建
+    ports:
+      - "8081:8081"    # 本地端口:容器端口
+    environment:
+      - PROVIDER_SERVICE=provider:8080  # 指向服务提供者（容器名:端口）
+    depends_on:
+      - provider       # 确保provider先启动
+    restart: always
+    networks:
+      - microservice-network
+
+# 自定义网络（让容器之间可以通过服务名通信）
+networks:
+  microservice-network:
+    driver: bridge

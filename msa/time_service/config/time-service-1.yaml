@@ -1,0 +1,11 @@
+service:
+  serviceName: time-service
+  serviceId: ts-1
+  ipAddress: "172.16.0.7"
+  port: 28280
+  heartbeatInterval: 30
+
+registry:
+  addresses:
+    - http://172.16.0.7:28180
+    - http://172.16.0.7:28181

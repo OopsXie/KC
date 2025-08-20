@@ -1,0 +1,76 @@
+version: '3.8'
+
+services:
+  # MySQL 数据库
+  mysql:
+    image: mysql:8.0
+    container_name: onepass-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: onepass
+    ports:
+      - "8002:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./scripts/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - onepass-network
+    restart: always
+    command: --default-authentication-plugin=mysql_native_password
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis 缓存 - 端口改为7002
+  redis:
+    image: redis:7-alpine
+    container_name: onepass-redis
+    ports:
+      - "7002:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - onepass-network
+    restart: always
+    command: redis-server --appendonly yes
+
+  # One-Pass 应用
+  onepass-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: onepass-app
+    ports:
+      - "40008:40008"
+    environment:
+      - GIN_MODE=release
+      - TZ=Asia/Shanghai
+    volumes:
+      - ./config:/app/config
+      - ./logs:/app/logs
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    networks:
+      - onepass-network
+    restart: always
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:40008/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+networks:
+  onepass-network:
+    driver: bridge
+
+volumes:
+  mysql_data:
+    driver: local
+  redis_data:
+    driver: local

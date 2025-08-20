@@ -1,0 +1,10 @@
+registry:
+  port: 28181
+  instanceId: registry-2
+  cluster:
+    - http://xzh-registry-1:28180
+    - http://xzh-registry-2:28181
+  heartbeat:
+    timeoutSeconds: 60
+    cleanupInterval: 9
+    clusterCheckInterval: 10

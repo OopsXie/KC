@@ -1,0 +1,142 @@
+# 服务提供者部署配置
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: provider-deployment
+  labels:
+    app: provider
+spec:
+  replicas: 3  # 启动3个服务提供者实例
+  selector:
+    matchLabels:
+      app: provider
+  template:
+    metadata:
+      labels:
+        app: provider
+    spec:
+      containers:
+      - name: provider
+        image: service-provider:v1  # 本地构建的镜像
+        imagePullPolicy: Never  # 优先使用本地镜像，不远程拉取
+        ports:
+        - containerPort: 8080
+        resources:
+          requests:
+            cpu: "100m"
+            memory: "128Mi"
+          limits:
+            cpu: "200m"
+            memory: "256Mi"
+        # 健康检查配置
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 5  # 启动后5秒开始首次健康检查
+          periodSeconds: 10       # 每10秒检查一次
+          timeoutSeconds: 2       # 检查超时时间
+          successThreshold: 1     # 1次成功视为健康
+          failureThreshold: 3     # 3次失败视为不健康
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 3  # 启动后3秒开始首次就绪检查
+          periodSeconds: 5        # 每5秒检查
+        # 环境变量配置
+        env:
+        - name: ENVIRONMENT
+          value: "production"
+        - name: LOG_LEVEL
+          value: "info"
+
+---
+# 服务提供者Service（实现服务注册与发现）
+apiVersion: v1
+kind: Service
+metadata:
+  name: provider-service
+  labels:
+    app: provider
+spec:
+  selector:
+    app: provider  # 关联到标签为app:provider的Pod
+  ports:
+  - port: 80       # Service暴露的端口
+    targetPort: 8080  # 映射到Pod的端口
+    protocol: TCP
+    name: http
+  type: ClusterIP  # 仅集群内部可访问，自动提供负载均衡
+
+---
+# 服务消费者部署配置
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: consumer-deployment
+  labels:
+    app: consumer
+spec:
+  replicas: 2  # 启动2个服务消费者实例
+  selector:
+    matchLabels:
+      app: consumer
+  template:
+    metadata:
+      labels:
+        app: consumer
+    spec:
+      containers:
+      - name: consumer
+        image: service-consumer:v1  # 本地构建的镜像
+        imagePullPolicy: Never  # 优先使用本地镜像
+        ports:
+        - containerPort: 8081
+        resources:
+          requests:
+            cpu: "100m"
+            memory: "128Mi"
+          limits:
+            cpu: "200m"
+            memory: "256Mi"
+        # 健康检查配置
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8081
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8081
+          initialDelaySeconds: 3
+          periodSeconds: 5
+        # 环境变量配置
+        env:
+        - name: PROVIDER_SERVICE
+          value: "provider-service"  # 指向服务提供者的Service名称
+        - name: ENVIRONMENT
+          value: "production"
+        - name: LOG_LEVEL
+          value: "info"
+
+---
+# 服务消费者Service（用于外部访问）
+apiVersion: v1
+kind: Service
+metadata:
+  name: consumer-service
+  labels:
+    app: consumer
+spec:
+  selector:
+    app: consumer  # 关联到标签为app:consumer的Pod
+  ports:
+  - port: 80
+    targetPort: 8081
+    protocol: TCP
+    name: http
+  type: NodePort  # 暴露到集群外部，自动分配端口
+    

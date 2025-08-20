@@ -1,0 +1,10 @@
+registry:
+  port: 28181 # 监听端口
+  instanceId: registry-2
+  cluster:
+  - http://172.16.0.7:28180 # 主节点地址
+  - http://172.16.0.7:28181 # 从节点地址
+  heartbeat:
+    timeoutSeconds: 60      # 心跳超时时间（秒）
+    cleanupInterval: 9     # 清理任务检查间隔（秒）
+    clusterCheckInterval: 10 # 集群状态检查间隔（秒）

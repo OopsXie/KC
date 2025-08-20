@@ -1,0 +1,13 @@
+package router
+
+import (
+	"msa/client/handler"
+
+	"github.com/gin-gonic/gin"
+)
+
+func SetupRouter() *gin.Engine {
+	r := gin.Default()
+	r.GET("/api/getInfo", handler.HandleGetInfo)
+	return r
+}
