@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MinFS 文件系统管理平台</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="enterprise.css">
+</head>
+<body>
+    <!-- Main Layout -->
+    <div class="app-layout">
+        <!-- Left Sidebar Navigation -->
+        <aside class="sidebar">
+            <!-- Logo Section -->
+            <div class="sidebar-header">
+                <div class="logo-container">
+                    <img src="xyun.jpg" alt="MinFS" class="logo">
+                    <img src="logo.png" alt="金山" class="logo logo-secondary">
+                </div>
+            </div>
+
+            <!-- Navigation Menu -->
+            <nav class="nav-menu">
+                <div class="nav-section">
+                    <div class="nav-section-title">主要功能</div>
+                    <ul class="nav-list">
+                        <li class="nav-item active">
+                            <a href="#" class="nav-link">
+                                <i class="fas fa-folder-open"></i>
+                                <span>文件管理</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="cluster_new.html" class="nav-link">
+                                <i class="fas fa-server"></i>
+                                <span>集群监控</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+
+            <!-- User Info -->
+            <div class="user-info">
+                <div class="user-avatar">
+                    <i class="fas fa-user"></i>
+                </div>
+                <div class="user-details">
+                    <div class="user-name">管理员</div>
+                    <div class="user-role">系统管理员</div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <!-- Top Header -->
+            <header class="main-header">
+                <div class="header-left">
+                    <h1 class="page-title">文件管理</h1>
+                    <div class="breadcrumb">
+                        <span class="breadcrumb-item">
+                            <i class="fas fa-home"></i> 首页
+                        </span>
+                        <span class="breadcrumb-separator">/</span>
+                        <span class="breadcrumb-item active">文件管理</span>
+                    </div>
+                </div>
+                <div class="header-right">
+                    <button class="mobile-menu-toggle" onclick="toggleMobileMenu()">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <button class="btn btn-secondary" onclick="refreshFiles()">
+                        <i class="fas fa-sync-alt"></i> 刷新
+                    </button>
+                    <button class="btn btn-primary" onclick="checkHealth()">
+                        <i class="fas fa-heartbeat"></i> 健康检查
+                    </button>
+                </div>
+            </header>
+
+            <!-- Alert Messages -->
+            <div id="alertSuccess" class="alert alert-success">
+                <i class="fas fa-check-circle"></i> <span id="successMessage"></span>
+            </div>
+            <div id="alertError" class="alert alert-error">
+                <i class="fas fa-exclamation-circle"></i> <span id="errorMessage"></span>
+            </div>
+
+            <!-- Dashboard Content -->
+            <div class="dashboard-content">
+                <!-- Status Cards -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-file"></i>
+                        </div>
+                        <div class="stat-content">
+                            <div class="stat-value" id="totalFiles">-</div>
+                            <div class="stat-label">总文件数</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-hdd"></i>
+                        </div>
+                        <div class="stat-content">
+                            <div class="stat-value" id="totalSize">-</div>
+                            <div class="stat-label">存储用量</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-server"></i>
+                        </div>
+                        <div class="stat-content">
+                            <div class="stat-value" id="connectionStatus">检查中</div>
+                            <div class="stat-label">连接状态</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Main Content Grid -->
+                <div class="content-grid">
+                    <!-- File Operations Panel -->
+                    <div class="content-card">
+                        <div class="card-header">
+                            <h3 class="card-title">
+                                <i class="fas fa-tools"></i> 文件操作
+                            </h3>
+                        </div>
+                        <div class="card-content">
+                            <!-- Upload Area -->
+                            <div class="upload-area" id="uploadArea">
+                                <div class="upload-icon">
+                                    <i class="fas fa-cloud-upload-alt"></i>
+                                </div>
+                                <div class="upload-text">
+                                    <p>拖拽文件到此处上传</p>
+                                    <p class="upload-hint">或点击选择文件</p>
+                                </div>
+                                <input type="file" id="fileInput" style="display: none;" multiple>
+                            </div>
+
+                            <!-- Create Directory -->
+                            <div class="form-group">
+                                <label for="dirName" class="form-label">创建目录</label>
+                                <div class="input-group">
+                                    <input type="text" id="dirName" class="form-input" placeholder="输入目录名称">
+                                    <button class="btn btn-primary" onclick="createDirectory()">
+                                        <i class="fas fa-folder-plus"></i> 创建
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- File Explorer -->
+                    <div class="content-card file-explorer-card">
+                        <div class="card-header">
+                            <h3 class="card-title">
+                                <i class="fas fa-folder-open"></i> 文件浏览器
+                            </h3>
+                            <div class="card-actions">
+                                <div class="view-toggle">
+                                    <button class="view-btn active" data-view="grid">
+                                        <i class="fas fa-th"></i>
+                                    </button>
+                                    <button class="view-btn" data-view="list">
+                                        <i class="fas fa-list"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-content">
+                            <!-- File Navigation -->
+                            <div class="file-nav">
+                                <div class="current-path" id="breadcrumb">
+                                    <span class="path-item" onclick="navigateTo('/')">
+                                        <i class="fas fa-home"></i> 根目录
+                                    </span>
+                                </div>
+                            </div>
+
+                            <!-- Loading -->
+                            <div class="loading-state" id="loading">
+                                <i class="fas fa-spinner fa-spin"></i>
+                                <p>加载中...</p>
+                            </div>
+
+                            <!-- File List -->
+                            <div class="file-list" id="fileList">
+                                <!-- Files will be loaded here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modals -->
+    <!-- Cluster Info Modal -->
+    <div id="clusterModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">集群信息</h3>
+                <button class="modal-close" onclick="closeModal('clusterModal')">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div id="clusterInfo">
+                    <!-- Cluster info will be loaded here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Replica Distribution Modal -->
+    <div id="replicaModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title" id="replicaModalTitle">文件副本分布</h3>
+                <button class="modal-close" onclick="closeModal('replicaModal')">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div id="replicaContent">
+                    <!-- Replica info will be loaded here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+    <script>
+        // Mobile menu toggle functionality
+        function toggleMobileMenu() {
+            const sidebar = document.querySelector('.sidebar');
+            sidebar.classList.toggle('open');
+        }
+        
+        // Close mobile menu when clicking outside
+        document.addEventListener('click', function(event) {
+            const sidebar = document.querySelector('.sidebar');
+            const menuToggle = document.querySelector('.mobile-menu-toggle');
+            
+            if (!sidebar.contains(event.target) && !menuToggle.contains(event.target)) {
+                sidebar.classList.remove('open');
+            }
+        });
+    </script>
+
+    <!-- Progress Modal -->
+    <div class="progress-modal" id="progressModal">
+        <div class="progress-content">
+            <div class="progress-header">
+                <div class="progress-icon" id="progressIcon">
+                    <i class="fas fa-upload" id="progressIconSymbol"></i>
+                </div>
+                <div class="progress-info">
+                    <h3 id="progressTitle">上传文件</h3>
+                    <p id="progressFileName">文件名.txt</p>
+                </div>
+            </div>
+            
+            <div class="progress-bar-container">
+                <div class="progress-bar">
+                    <div class="progress-bar-fill" id="progressBarFill" style="width: 0%"></div>
+                </div>
+                <div class="progress-stats">
+                    <span class="progress-percentage" id="progressPercentage">0%</span>
+                    <span class="progress-speed" id="progressSpeed">0 KB/s</span>
+                </div>
+            </div>
+            
+            <div class="progress-actions">
+                <button class="btn btn-secondary" onclick="cancelProgress()" id="cancelBtn">取消</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Replica Distribution Modal -->
+    <div id="replicaModal" class="modal">
+        <div class="modal-content replica-modal">
+            <div class="modal-header">
+                <h3 class="modal-title" id="replicaModalTitle">文件副本分布</h3>
+                <button class="modal-close" onclick="closeModal('replicaModal')">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div id="replicaContent">
+                    <!-- Replica info will be loaded here -->
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

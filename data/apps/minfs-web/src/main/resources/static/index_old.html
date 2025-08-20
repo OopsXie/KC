@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MinFS 文件系统管理</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Logo in top-left corner -->
+        <div class="logo-overlay">
+            <img src="logo.png" alt="金山云" class="logo-topleft">
+        </div>
+
+        <!-- Header -->
+        <div class="header">
+            <h1>MinFS 文件系统</h1>
+            <p>分布式文件系统管理平台</p>
+        </div>
+
+        <!-- Alert Messages -->
+        <div id="alertSuccess" class="alert alert-success">
+            <i class="fas fa-check-circle"></i> <span id="successMessage"></span>
+        </div>
+        <div id="alertError" class="alert alert-error">
+            <i class="fas fa-exclamation-circle"></i> <span id="errorMessage"></span>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Sidebar -->
+            <div class="sidebar">
+                <h3 class="section-title">
+                    <i class="fas fa-tools"></i> 操作面板
+                </h3>
+
+                <!-- Upload Area -->
+                <div class="upload-area" id="uploadArea">
+                    <i class="fas fa-cloud-upload-alt"></i>
+                    <p>拖拽文件到此处上传</p>
+                    <p>或点击选择文件</p>
+                    <input type="file" id="fileInput" style="display: none;" multiple>
+                </div>
+
+                <!-- Create Directory -->
+                <div class="input-group">
+                    <label for="dirName">创建目录</label>
+                    <input type="text" id="dirName" placeholder="输入目录名称">
+                </div>
+                <button class="btn" onclick="createDirectory()">
+                    <i class="fas fa-folder-plus"></i> 创建目录
+                </button>
+
+                <!-- Actions -->
+                <div style="margin-top: 30px;">
+                    <button class="btn btn-secondary" onclick="refreshFiles()">
+                        <i class="fas fa-sync-alt"></i> 刷新
+                    </button>
+                    <button class="btn btn-success" onclick="checkHealth()">
+                        <i class="fas fa-heartbeat"></i> 健康检查
+                    </button>
+                </div>
+            </div>
+
+            <!-- File Explorer -->
+            <div class="file-explorer">
+                <h3 class="section-title">
+                    <i class="fas fa-folder-open"></i> 文件浏览器
+                </h3>
+
+                <!-- Breadcrumb -->
+                <div class="breadcrumb" id="breadcrumb">
+                    <span class="breadcrumb-item" onclick="navigateTo('/')">
+                        <i class="fas fa-home"></i> 根目录
+                    </span>
+                </div>
+
+                <!-- Loading -->
+                <div class="loading" id="loading">
+                    <i class="fas fa-spinner"></i>
+                    <p>加载中...</p>
+                </div>
+
+                <!-- File List -->
+                <div class="file-list" id="fileList">
+                    <!-- Files will be loaded here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Status Bar -->
+        <div class="status-bar">
+            <div class="status-info">
+                <div class="status-item">
+                    <div class="status-value" id="totalFiles">-</div>
+                    <div class="status-label">文件数量</div>
+                </div>
+                <div class="status-item">
+                    <div class="status-value" id="totalSize">-</div>
+                    <div class="status-label">总大小</div>
+                </div>
+                <div class="status-item">
+                    <div class="status-value" id="connectionStatus">检查中</div>
+                    <div class="status-label">连接状态</div>
+                </div>
+            </div>
+            <button class="btn" onclick="showClusterInfo()">
+                <i class="fas fa-server"></i> 集群信息
+            </button>
+        </div>
+    </div>
+
+    <!-- Modals -->
+    <div id="clusterModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">集群信息</h3>
+                <span class="close" onclick="closeModal('clusterModal')">&times;</span>
+            </div>
+            <div id="clusterInfo">
+                <!-- Cluster info will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Replica Distribution Modal -->
+    <div id="replicaModal" class="modal">
+        <div class="modal-content replica-modal">
+            <div class="modal-header">
+                <h3 class="modal-title" id="replicaModalTitle">文件副本分布</h3>
+                <span class="close" onclick="closeModal('replicaModal')">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div id="replicaContent">
+                    <!-- Replica info will be loaded here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>

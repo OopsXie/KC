@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>集群监控 - MinFS 文件系统管理平台</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="enterprise.css">
+    <link rel="stylesheet" href="cluster-enterprise.css">
+</head>
+<body>
+    <!-- Main Layout -->
+    <div class="app-layout">
+        <!-- Left Sidebar Navigation -->
+        <aside class="sidebar">
+            <!-- Logo Section -->
+            <div class="sidebar-header">
+                <div class="logo-container">
+                    <img src="xyun.jpg" alt="MinFS" class="logo">
+                    <img src="logo.png" alt="金山" class="logo logo-secondary">
+                </div>
+            </div>
+
+            <!-- Navigation Menu -->
+            <nav class="nav-menu">
+                <div class="nav-section">
+                    <div class="nav-section-title">主要功能</div>
+                    <ul class="nav-list">
+                        <li class="nav-item">
+                            <a href="index_new.html" class="nav-link">
+                                <i class="fas fa-folder-open"></i>
+                                <span>文件管理</span>
+                            </a>
+                        </li>
+                        <li class="nav-item active">
+                            <a href="#" class="nav-link">
+                                <i class="fas fa-server"></i>
+                                <span>集群监控</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+
+            <!-- User Info -->
+            <div class="user-info">
+                <div class="user-avatar">
+                    <i class="fas fa-user"></i>
+                </div>
+                <div class="user-details">
+                    <div class="user-name">管理员</div>
+                    <div class="user-role">系统管理员</div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <!-- Top Header -->
+            <header class="main-header">
+                <div class="header-left">
+                    <h1 class="page-title">集群监控</h1>
+                    <div class="breadcrumb">
+                        <span class="breadcrumb-item">
+                            <i class="fas fa-home"></i> 首页
+                        </span>
+                        <span class="breadcrumb-separator">/</span>
+                        <span class="breadcrumb-item active">集群监控</span>
+                    </div>
+                </div>
+                <div class="header-right">
+                    <button class="mobile-menu-toggle" onclick="toggleMobileMenu()">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <button class="btn btn-secondary" onclick="refreshClusterInfo()">
+                        <i class="fas fa-sync-alt"></i> 刷新
+                    </button>
+                    <button class="btn btn-primary" onclick="showBatchControlModal()">
+                        <i class="fas fa-cogs"></i> 批量控制
+                    </button>
+                </div>
+            </header>
+
+            <!-- Alert Messages -->
+            <div id="alertSuccess" class="alert alert-success">
+                <i class="fas fa-check-circle"></i> <span id="successMessage"></span>
+            </div>
+            <div id="alertError" class="alert alert-error">
+                <i class="fas fa-exclamation-circle"></i> <span id="errorMessage"></span>
+            </div>
+
+            <!-- Cluster Overview -->
+            <div class="dashboard-content">
+                <!-- Cluster Status Cards -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon meta-server">
+                            <i class="fas fa-database"></i>
+                        </div>
+                        <div class="stat-content">
+                            <div class="stat-value" id="totalMetaServers">-</div>
+                            <div class="stat-label">元数据服务器</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon data-server">
+                            <i class="fas fa-hdd"></i>
+                        </div>
+                        <div class="stat-content">
+                            <div class="stat-value" id="totalDataServers">-</div>
+                            <div class="stat-label">数据服务器</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon cluster-status">
+                            <i class="fas fa-heartbeat"></i>
+                        </div>
+                        <div class="stat-content">
+                            <div class="stat-value" id="clusterStatus">检查中</div>
+                            <div class="stat-label">集群状态</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon storage">
+                            <i class="fas fa-chart-pie"></i>
+                        </div>
+                        <div class="stat-content">
+                            <div class="stat-value" id="storageUsage">-</div>
+                            <div class="stat-label">存储使用率</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Server Details -->
+                <div class="server-sections">
+                    <!-- Meta Servers Section -->
+                    <div class="content-card">
+                        <div class="card-header">
+                            <h3 class="card-title">
+                                <i class="fas fa-database"></i> 元数据服务器
+                            </h3>
+                            <div class="server-badge" id="metaServerBadge">-</div>
+                        </div>
+                        <div class="card-content">
+                            <div class="server-grid" id="metaServerGrid">
+                                <!-- Meta servers will be loaded here -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Data Servers Section -->
+                    <div class="content-card">
+                        <div class="card-header">
+                            <h3 class="card-title">
+                                <i class="fas fa-hdd"></i> 数据服务器
+                            </h3>
+                            <div class="server-badge" id="dataServerBadge">-</div>
+                        </div>
+                        <div class="card-content">
+                            <div class="server-grid" id="dataServerGrid">
+                                <!-- Data servers will be loaded here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- System Information -->
+                <div class="content-card">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="fas fa-info-circle"></i> 系统信息
+                        </h3>
+                    </div>
+                    <div class="card-content">
+                        <div class="system-info-grid">
+                            <div class="info-item">
+                                <div class="info-label">连接地址</div>
+                                <div class="info-value">http://10.212.217.58:2379</div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-label">命名空间</div>
+                                <div class="info-value">/minfs</div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-label">最后更新</div>
+                                <div class="info-value" id="lastUpdate">-</div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-label">运行时间</div>
+                                <div class="info-value">24小时 15分钟</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-spinner">
+            <i class="fas fa-spinner fa-spin"></i>
+            <p>正在获取集群信息...</p>
+        </div>
+    </div>
+
+    <!-- Server Control Modal -->
+    <div class="modal" id="serverControlModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">服务器控制</h3>
+                <button class="modal-close" onclick="closeModal('serverControlModal')">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="control-section">
+                    <h4><i class="fas fa-database"></i> MetaServer 控制</h4>
+                    <div class="form-group">
+                        <label class="form-label">服务器ID (可选):</label>
+                        <input type="text" id="metaServerId" class="form-input" placeholder="留空则批量控制所有MetaServer (1-3)">
+                        <small class="help-text">输入具体ID（如：1）控制单个服务器，留空则批量控制所有服务器</small>
+                    </div>
+                    <div class="control-buttons">
+                        <button class="btn btn-primary" onclick="controlServer('meta', 'start')">
+                            <i class="fas fa-play"></i> 启动
+                        </button>
+                        <button class="btn btn-secondary" onclick="controlServer('meta', 'stop')">
+                            <i class="fas fa-stop"></i> 停止
+                        </button>
+                        <button class="btn btn-secondary" onclick="controlServer('meta', 'status')">
+                            <i class="fas fa-info-circle"></i> 状态
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="control-section">
+                    <h4><i class="fas fa-hdd"></i> DataServer 控制</h4>
+                    <div class="form-group">
+                        <label class="form-label">服务器ID (可选):</label>
+                        <input type="text" id="dataServerId" class="form-input" placeholder="留空则批量控制所有DataServer (1-4)">
+                        <small class="help-text">输入具体ID（如：1）控制单个服务器，留空则批量控制所有服务器</small>
+                    </div>
+                    <div class="control-buttons">
+                        <button class="btn btn-primary" onclick="controlServer('data', 'start')">
+                            <i class="fas fa-play"></i> 启动
+                        </button>
+                        <button class="btn btn-secondary" onclick="controlServer('data', 'stop')">
+                            <i class="fas fa-stop"></i> 停止
+                        </button>
+                        <button class="btn btn-secondary" onclick="controlServer('data', 'status')">
+                            <i class="fas fa-info-circle"></i> 状态
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Command Output Modal -->
+    <div class="modal" id="commandOutputModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">命令执行结果</h3>
+                <button class="modal-close" onclick="closeModal('commandOutputModal')">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <pre id="commandOutput" class="command-output"></pre>
+                <div class="modal-actions">
+                    <button class="btn btn-secondary" onclick="closeModal('commandOutputModal')">关闭</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- DataServer Details Modal -->
+    <div class="modal" id="dataServerDetailsModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title" id="dataServerDetailsTitle">DataServer 详情</h3>
+                <button class="modal-close" onclick="closeModal('dataServerDetailsModal')">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div id="dataServerDetailsContent">
+                    <!-- DataServer details will be loaded here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="cluster.js"></script>
+    <script>
+        // Mobile menu toggle functionality
+        function toggleMobileMenu() {
+            const sidebar = document.querySelector('.sidebar');
+            sidebar.classList.toggle('open');
+        }
+        
+        // Close mobile menu when clicking outside
+        document.addEventListener('click', function(event) {
+            const sidebar = document.querySelector('.sidebar');
+            const menuToggle = document.querySelector('.mobile-menu-toggle');
+            
+            if (!sidebar.contains(event.target) && !menuToggle.contains(event.target)) {
+                sidebar.classList.remove('open');
+            }
+        });
+    </script>
+</body>
+</html>
